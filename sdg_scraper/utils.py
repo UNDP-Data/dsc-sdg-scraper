@@ -5,6 +5,7 @@ Utility functions for scraping files.
 import os
 from hashlib import md5
 
+import click
 import httpx
 
 __all__ = ["get_file_id", "download_file"]
@@ -34,7 +35,7 @@ async def download_file(
     folder_path: str = None,
     file_extension: str = "pdf",
     headers: dict = None,
-) -> str:
+) -> str | None:
     """
     Download a PDF file from a URL and save it to folder_path.
 
@@ -57,16 +58,20 @@ async def download_file(
 
     Returns
     -------
-    file_path : str
-        Path to the downloaded file.
+    file_path : str | None
+        Path to the downloaded file or None if download failed.
 
     Raises
     ------
     httpx.HTTPStatusError
         If the response code is not 200.
     """
-    response = await client.get(url=url, headers=headers)
-    response.raise_for_status()
+    try:
+        response = await client.get(url=url, headers=headers)
+        response.raise_for_status()
+    except httpx.HTTPStatusError:
+        click.echo(f"Could not download a file from {url}.")
+        return None
 
     # construct a file name and path
     file_id = get_file_id(response.content)

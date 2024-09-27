@@ -161,16 +161,13 @@ class BaseScraper(ABC):
         """
         pdfs = []
         for url in urls:
-            try:
-                pdf = await download_file(
-                    client=self.client,
-                    url=url,
-                    folder_path=self.folder_path,
-                )
-                pdfs.append(pdf)
-            except httpx.HTTPStatusError:
-                click.echo(f"Could not download a PDF from {url}.")
-                pdfs.append(None)
+            # returns None if download has failed
+            pdf = await download_file(
+                client=self.client,
+                url=url,
+                folder_path=self.folder_path,
+            )
+            pdfs.append(pdf)
         return pdfs
 
     @property

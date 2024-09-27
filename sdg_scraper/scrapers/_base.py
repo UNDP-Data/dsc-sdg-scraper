@@ -42,24 +42,33 @@ class BaseScraper(ABC):
         headers : dict, optional
             Headers to be passed to GET call in `requests` while scraping.
         """
-        self.client = httpx.Client(headers=headers, follow_redirects=True)
         self.url_base = url_base
         self.folder_path = folder_path
+        self.headers = headers
         self._urls = set()
         self.pubs = []
 
+    async def __aenter__(self):
+        self.client = httpx.AsyncClient(headers=self.headers, follow_redirects=True)
+        click.echo("Opened the client...")
+        return self
+
+    async def __aexit__(self, exc_type, exc_value, traceback):
+        await self.client.aclose()
+        click.echo("Closed the client.")
+
     @final
-    def __call__(self, pages: list[int]) -> None:
+    async def __call__(self, pages: list[int]) -> None:
         click.echo("Scraping listing pages...")
         for page in tqdm(pages):
-            self.parse_listing(page=page)
+            await self.parse_listing(page=page)
         click.echo("Scraping publication pages...")
         for url in tqdm(self.urls):
-            self.parse_publication(url=url)
+            await self.parse_publication(url=url)
         click.echo("Done.")
 
     @abstractmethod
-    def parse_listing(self, page: int) -> None:
+    async def parse_listing(self, page: int) -> None:
         """
         Source-specific method to parse a webpage listing publications to get
         URLs to publication pages. This method should be overridden in a subclass.
@@ -76,7 +85,7 @@ class BaseScraper(ABC):
         pass
 
     @final
-    def parse_publication(self, url: str):
+    async def parse_publication(self, url: str):
         """
         Parse a publication page and download PDF files.
 
@@ -90,7 +99,7 @@ class BaseScraper(ABC):
         HTTPError
             If the response code is not 200.
         """
-        response = self.client.get(url=url)
+        response = await self.client.get(url=url)
         response.raise_for_status()
         soup = BeautifulSoup(response.content, features="lxml")
         labels = self._parse_labels(soup)
@@ -155,7 +164,6 @@ class BaseScraper(ABC):
             try:
                 pdf = download_file(
                     url=url,
-                    client=self.client,
                     folder_path=self.folder_path,
                 )
                 pdfs.append(pdf)

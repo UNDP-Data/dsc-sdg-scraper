@@ -28,15 +28,15 @@ def get_file_id(content: bytes) -> str:
     return file_id
 
 
-def download_file(
+async def download_file(
+    client: httpx.AsyncClient,
     url: str,
-    client: httpx.Client = None,
     folder_path: str = None,
     file_extension: str = "pdf",
-    **kwargs,
+    headers: dict = None,
 ) -> str:
     """
-    Download a PDF file from a URL and save it to output_folder.
+    Download a PDF file from a URL and save it to folder_path.
 
     Note that since the file name is based on an MD5 checksum of its contents, there is no way to know if the file
     already exists to avoid repeated downloads. In practice, using a URL to identify a PDF is not an option either for
@@ -44,16 +44,16 @@ def download_file(
 
     Parameters
     ----------
+    client : httpx.AsyncClient, optional
+        Existing client instance if applicable.
     url : str
         URL of the file to be downloaded.
-    client : httpx.Client, optional
-        Existing client instance if applicable.
     folder_path : str, optional
         Path to the folder where the file will be saved. Defaults to the current directory.
     file_extension : str, default="pdf"
         Extension to use for the downloaded file.
-    **kwargs : dict, optional
-        Additional keyword arguments to be passed to the GET call.
+    headers : dict, optional
+        Custom headers passed to the GET call.
 
     Returns
     -------
@@ -65,8 +65,7 @@ def download_file(
     httpx.HTTPStatusError
         If the response code is not 200.
     """
-    func = httpx.get if client is None else client.get
-    response = func(url, **kwargs)
+    response = await client.get(url=url, headers=headers)
     response.raise_for_status()
 
     # construct a file name and path

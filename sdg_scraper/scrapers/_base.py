@@ -107,7 +107,7 @@ class BaseScraper(ABC):
             click.echo(f"Publication at {url} has no labels.")
             return
         urls = self._parse_urls(soup)
-        pdfs = self._download_files(urls)
+        pdfs = await self._download_files(urls)
         files = [{"url": url, "pdf": pdf} for url, pdf in zip(urls, pdfs)]
         pub = Publication(
             source=url,
@@ -145,7 +145,7 @@ class BaseScraper(ABC):
         pass
 
     @final
-    def _download_files(self, urls: list[str]) -> list[str | None]:
+    async def _download_files(self, urls: list[str]) -> list[str | None]:
         """
         Download PDFs from a list of URLs.
 
@@ -162,7 +162,8 @@ class BaseScraper(ABC):
         pdfs = []
         for url in urls:
             try:
-                pdf = download_file(
+                pdf = await download_file(
+                    client=self.client,
                     url=url,
                     folder_path=self.folder_path,
                 )

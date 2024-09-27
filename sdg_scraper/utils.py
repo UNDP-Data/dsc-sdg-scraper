@@ -2,13 +2,15 @@
 Utility functions for scraping files.
 """
 
+import importlib
 import os
+import pkgutil
 from hashlib import md5
 
 import click
 import httpx
 
-__all__ = ["get_file_id", "download_file"]
+__all__ = ["get_file_id", "download_file", "list_scrapers"]
 
 
 def get_file_id(content: bytes) -> str:
@@ -81,3 +83,18 @@ async def download_file(
     with open(file_path, "wb") as file:
         file.write(response.content)
     return file_path
+
+
+def list_scrapers() -> list[str]:
+    """
+    List public package modules under scrapers subpackage.
+
+    Returns
+    -------
+    scrapers : list[str]
+        Scraper modules available.
+    """
+    package = importlib.import_module(f"{__package__}.scrapers")
+    modules = pkgutil.iter_modules(package.__path__)
+    scrapers = [name for _, name, _ in modules if not name.startswith("_")]
+    return scrapers

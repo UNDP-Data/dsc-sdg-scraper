@@ -2,6 +2,7 @@
 A base scraper class from which other scrapers inherit.
 """
 
+import asyncio
 import os
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
@@ -159,15 +160,8 @@ class BaseScraper(ABC):
         pdfs : list[str]
             List of paths to PDF files. For failed downloads, the path is an empty string.
         """
-        pdfs = []
-        for url in urls:
-            # returns None if download has failed
-            pdf = await download_file(
-                client=self.client,
-                url=url,
-                folder_path=self.folder_path,
-            )
-            pdfs.append(pdf)
+        tasks = [download_file(self.client, url, self.folder_path) for url in urls]
+        pdfs = await asyncio.gather(*tasks)
         return pdfs
 
     @property

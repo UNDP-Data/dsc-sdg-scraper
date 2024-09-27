@@ -41,7 +41,7 @@ class BaseScraper(ABC):
         folder_path : str
             Directory to save PDFs to. The directory must exist beforehand.
         headers : dict, optional
-            Headers to be passed to GET call in `requests` while scraping.
+            Headers to be passed to GET call.
         """
         self.url_base = url_base
         self.folder_path = folder_path
@@ -77,7 +77,7 @@ class BaseScraper(ABC):
         Parameters
         ----------
         page : int
-            Page number for pagination.
+            Page number the parse publications from.
 
         Returns
         -------
@@ -153,12 +153,12 @@ class BaseScraper(ABC):
         Parameters
         ----------
         urls : list[str]
-            List of URLs to download PDFs from.
+            URLs to download PDFs from.
 
         Returns
         -------
         pdfs : list[str]
-            List of paths to PDF files. For failed downloads, the path is an empty string.
+            Paths to PDF files. For failed downloads, the path is None.
         """
         tasks = [download_file(self.client, url, self.folder_path) for url in urls]
         pdfs = await asyncio.gather(*tasks)

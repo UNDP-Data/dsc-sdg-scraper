@@ -2,15 +2,18 @@
 Utility functions for scraping files.
 """
 
+import asyncio
 import importlib
 import os
 import pkgutil
+from functools import wraps
 from hashlib import md5
+from typing import Callable
 
 import click
 import httpx
 
-__all__ = ["get_file_id", "download_file", "list_scrapers"]
+__all__ = ["get_file_id", "download_file", "list_scrapers", "make_sync"]
 
 
 def get_file_id(content: bytes) -> str:
@@ -98,3 +101,27 @@ def list_scrapers() -> list[str]:
     modules = pkgutil.iter_modules(package.__path__)
     scrapers = [name for _, name, _ in modules if not name.startswith("_")]
     return scrapers
+
+
+def make_sync(func: Callable) -> Callable:
+    """
+    A decorator to make an async function run in a synchronous context.
+
+    This is only used for the CLI. See https://github.com/pallets/click/issues/2033.
+
+    Parameters
+    ----------
+    func : Callable
+        A function to be decorated.
+
+    Returns
+    -------
+    wrapped : Callable
+        Function wrapper that calls asyncio internally.
+    """
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        return asyncio.run(func(*args, **kwargs))
+
+    return wrapper

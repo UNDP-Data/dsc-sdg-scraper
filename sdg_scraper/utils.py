@@ -63,8 +63,8 @@ async def download_file(
 
     Returns
     -------
-    file_path : str | None
-        Path to the downloaded file or None if download failed.
+    file_name : str | None
+        Name of the downloaded file or None if download failed.
 
     Raises
     ------
@@ -85,7 +85,7 @@ async def download_file(
 
     with open(file_path, "wb") as file:
         file.write(response.content)
-    return file_path
+    return file_name
 
 
 def list_scrapers() -> list[str]:

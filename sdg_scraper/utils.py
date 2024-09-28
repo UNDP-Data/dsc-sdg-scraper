@@ -13,6 +13,8 @@ from typing import Callable
 import click
 import httpx
 
+from .entities import File
+
 __all__ = ["get_file_id", "download_file", "list_scrapers", "make_sync"]
 
 
@@ -40,7 +42,7 @@ async def download_file(
     folder_path: str = None,
     file_extension: str = "pdf",
     headers: dict = None,
-) -> str | None:
+) -> File:
     """
     Download a PDF file from a URL and save it to folder_path.
 
@@ -63,8 +65,8 @@ async def download_file(
 
     Returns
     -------
-    file_name : str | None
-        Name of the downloaded file or None if download failed.
+    file : File
+        Entity containing the URL and downloaded file name. If a download failed, the name is None.
 
     Raises
     ------
@@ -76,7 +78,7 @@ async def download_file(
         response.raise_for_status()
     except httpx.HTTPStatusError:
         click.echo(f"Could not download a file from {url}.")
-        return None
+        return File(url=url, name=None)
 
     # construct a file name and path
     file_id = get_file_id(response.content)
@@ -85,7 +87,8 @@ async def download_file(
 
     with open(file_path, "wb") as file:
         file.write(response.content)
-    return file_name
+    file = File(url=url, name=file_name)
+    return file
 
 
 def list_scrapers() -> list[str]:

@@ -14,7 +14,7 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 
-from ..entities import Publication
+from ..entities import File, Publication
 from ..utils import download_file
 
 
@@ -108,8 +108,7 @@ class BaseScraper(ABC):
             click.echo(f"Publication at {url} has no labels.")
             return
         urls = self._parse_urls(soup)
-        names = await self._download_files(urls)
-        files = [{"url": url, "name": name} for url, name in zip(urls, names)]
+        files = await self._download_files(urls)
         pub = Publication(
             source=url,
             title=self._parse_title(soup),
@@ -146,7 +145,7 @@ class BaseScraper(ABC):
         pass
 
     @final
-    async def _download_files(self, urls: list[str]) -> list[str | None]:
+    async def _download_files(self, urls: list[str]) -> list[File]:
         """
         Download files from a list of URLs.
 
@@ -157,12 +156,12 @@ class BaseScraper(ABC):
 
         Returns
         -------
-        names : list[str]
-            Names of downloaded files. For failed downloads, the name is None.
+        files : list[File]
+            List of file objects.
         """
         tasks = [download_file(self.client, url, self.folder_path) for url in urls]
-        names = await asyncio.gather(*tasks)
-        return names
+        files = await asyncio.gather(*tasks)
+        return files
 
     @property
     @final

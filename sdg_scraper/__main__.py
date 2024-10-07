@@ -18,7 +18,7 @@ def cli():
 @cli.command()
 def list():
     """List available sources/scrapers."""
-    scrapers = list_scrapers()
+    scrapers = "\n".join(list_scrapers())
     click.echo(scrapers)
 
 

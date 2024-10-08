@@ -62,7 +62,7 @@ class BaseScraper(ABC):
         click.echo("Scraping listing pages...")
         tasks = [self.parse_listing(page=page) for page in pages]
         await asyncio.gather(*tasks)
-        click.echo("Scraping publication pages...")
+        click.echo(f"Scraping publications and saving files to {self.folder_path}...")
         tasks = [self.parse_publication(url=url) for url in self.urls]
         await asyncio.gather(*tasks)
         click.echo("Done.")

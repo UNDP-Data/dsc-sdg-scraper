@@ -3,6 +3,7 @@ A command line interface for scraping.
 """
 
 import importlib
+import os
 
 import click
 
@@ -31,6 +32,7 @@ def list():
     "--folder",
     "-f",
     type=str,
+    default=os.getcwd(),
     help="Path to a folder to save files to.",
 )
 @click.option(

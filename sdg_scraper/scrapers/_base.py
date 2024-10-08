@@ -12,6 +12,7 @@ import click
 import httpx
 import pandas as pd
 from bs4 import BeautifulSoup
+from tqdm.asyncio import tqdm
 
 from ..entities import File, Publication
 from ..utils import download_file
@@ -61,11 +62,10 @@ class BaseScraper(ABC):
     async def __call__(self, pages: list[int]) -> None:
         click.echo("Scraping listing pages...")
         tasks = [self.parse_listing(page=page) for page in pages]
-        await asyncio.gather(*tasks)
+        await tqdm.gather(*tasks)
         click.echo(f"Scraping publications and saving files to {self.folder_path}...")
         tasks = [self.parse_publication(url=url) for url in self.urls]
-        await asyncio.gather(*tasks)
-        click.echo("Done.")
+        await tqdm.gather(*tasks)
 
     @abstractmethod
     async def parse_listing(self, page: int) -> None:

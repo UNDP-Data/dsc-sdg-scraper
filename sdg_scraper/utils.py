@@ -76,8 +76,8 @@ async def download_file(
     try:
         response = await client.get(url=url, headers=headers)
         response.raise_for_status()
-    except httpx.HTTPStatusError:
-        click.echo(f"Could not download a file from {url}.")
+    except httpx.HTTPError:
+        click.echo(f"Could not download a file from {url}.", err=True)
         return File(url=url, name=None)
 
     # construct a file name and path

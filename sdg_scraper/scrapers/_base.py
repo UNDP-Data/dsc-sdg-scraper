@@ -99,8 +99,12 @@ class BaseScraper(ABC):
         HTTPError
             If the response code is not 200.
         """
-        response = await self.client.get(url=url)
-        response.raise_for_status()
+        try:
+            response = await self.client.get(url=url)
+            response.raise_for_status()
+        except httpx.HTTPError:
+            click.echo(f"Failed to fetch {url}.", err=True)
+            return
         soup = BeautifulSoup(response.content, features="lxml")
         labels = self._parse_labels(soup)
         if labels is None:

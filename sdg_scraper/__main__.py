@@ -23,11 +23,9 @@ def list():
 
 
 @cli.command()
-@click.option(
-    "--source",
-    "-s",
+@click.argument(
+    "source",
     type=click.Choice(list_scrapers(), case_sensitive=False),
-    help="The name of the source to scrape.",
 )
 @click.option(
     "--folder",
@@ -46,7 +44,10 @@ def list():
 )
 @make_sync
 async def run(source, folder, pages):
-    """Run a scraper for a given source."""
+    """Run a scraper for a given source.
+
+    SOURCE The name of the source to scrape.
+    """
     # dynamically import the module and scraper
     module = importlib.import_module(f".scrapers.{source}", __package__)
     scraper = module.Scraper(folder_path=folder)

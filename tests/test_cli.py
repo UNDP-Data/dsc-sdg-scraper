@@ -24,7 +24,7 @@ def test_run(source, tmp_path):
     runner = CliRunner()
     path = tmp_path / source
     path.mkdir()
-    result = runner.invoke(cli.run, ["-s", source, "-p", "1", "1", "-f", str(path)])
+    result = runner.invoke(cli.run, [source, "-p", "1", "1", "-f", str(path)])
     assert result.exit_code == 0
     assert len(list(path.glob("publications-*.jsonl"))) == 1, "Metadata file is missing"
     assert len(list(path.glob("*.pdf"))) > 0, "No files have been downloaded"

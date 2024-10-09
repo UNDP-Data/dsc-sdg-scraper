@@ -30,7 +30,13 @@ class BaseScraper(ABC):
         Parse a publication page and download PDF files.
     """
 
-    def __init__(self, url_base: str, folder_path: str, headers: dict = None):
+    def __init__(
+        self,
+        url_base: str,
+        folder_path: str,
+        headers: dict = None,
+        max_connections: int = 4,
+    ):
         """
         Initialise an instance of the base class.
 
@@ -42,15 +48,26 @@ class BaseScraper(ABC):
             Directory to save PDFs to. The directory must exist beforehand.
         headers : dict, optional
             Headers to be passed to GET call.
+        max_connections : int, default=4
+            Maximum number of concurrent connections.
         """
         self.url_base = url_base
         self.folder_path = folder_path
         self.headers = headers
         self._urls = set()
         self.pubs = []
+        self.limits = httpx.Limits(
+            max_connections=max_connections,
+            max_keepalive_connections=None,
+            keepalive_expiry=5.0,
+        )
 
     async def __aenter__(self):
-        self.client = httpx.AsyncClient(headers=self.headers, follow_redirects=True)
+        self.client = httpx.AsyncClient(
+            headers=self.headers,
+            follow_redirects=True,
+            limits=self.limits,
+        )
         click.echo("Opened the client...")
         return self
 

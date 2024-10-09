@@ -11,11 +11,15 @@ from ._base import BaseScraper
 
 
 class Scraper(BaseScraper):
-    def __init__(self, folder_path: str = None, headers: dict = None):
+    def __init__(
+        self,
+        folder_path: str = None,
+        **kwargs,
+    ):
         super().__init__(
             url_base="https://www.undp.org",
             folder_path=folder_path,
-            headers=headers,
+            **kwargs,
         )
 
     async def parse_listing(self, page: int = 0) -> None:

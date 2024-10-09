@@ -44,15 +44,22 @@ def list():
     show_default=True,
     help="A range of listing pages to scrape from.",
 )
+@click.option(
+    "--connections",
+    "-c",
+    type=int,
+    default=4,
+    help="Maximum number of concurrent connections.",
+)
 @make_sync
-async def run(source, folder, pages):
+async def run(source, folder, pages, connections):
     """Run a scraper for a given source.
 
     SOURCE The name of the source to scrape.
     """
     # dynamically import the module and scraper
     module = importlib.import_module(f".scrapers.{source}", __package__)
-    scraper = module.Scraper(folder_path=folder)
+    scraper = module.Scraper(folder_path=folder, max_connections=connections)
     async with scraper:
         await scraper(pages=range(pages[0], pages[1] + 1))
     scraper.export()

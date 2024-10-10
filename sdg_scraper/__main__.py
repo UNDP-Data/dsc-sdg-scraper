@@ -49,6 +49,7 @@ def list():
     "-c",
     type=int,
     default=4,
+    show_default=True,
     help="Maximum number of concurrent connections.",
 )
 @make_sync

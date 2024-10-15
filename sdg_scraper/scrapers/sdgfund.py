@@ -30,11 +30,9 @@ class Scraper(BaseScraper):
 
     @staticmethod
     def _parse_title(soup: BeautifulSoup) -> str | None:
-        h1 = soup.find("h1")
-        if h1 is None:
-            return None
-        title = h1.text.strip()
-        return title
+        if h1 := soup.find("h1"):
+            title = h1.text.strip()
+            return title
 
     @staticmethod
     def _parse_type(soup: BeautifulSoup) -> str | None:

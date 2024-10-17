@@ -46,9 +46,10 @@ async def download_file(
     """
     Download a PDF file from a URL and save it to folder_path.
 
-    Note that since the file name is based on an MD5 checksum of its contents, there is no way to know if the file
-    already exists to avoid repeated downloads. In practice, using a URL to identify a PDF is not an option either for
-    the same publication file can appear on different websites (and under different names too).
+    Note that since the file name is based on an MD5 checksum of its contents, there is no way
+    to know if the file already exists to avoid repeated downloads. In practice, using a URL
+    to identify a PDF is not an option either for the same publication file can appear on
+    different websites (and under different names too).
 
     Parameters
     ----------

@@ -54,5 +54,6 @@ class Publication(Metadata):
 
     files: list[File] | None = Field(
         default=None,
-        description="Files from the publication page. One publication can have multiple linked files.",
+        description="""Files from the publication page. One publication can have
+        multiple linked files.""",
     )

@@ -11,6 +11,10 @@ from ._base import BaseScraper
 
 
 class Scraper(BaseScraper):
+    """
+    Scraper for UNDP Publications (https://www.undp.org/publications).
+    """
+
     def __init__(
         self,
         folder_path: str = None,

@@ -186,6 +186,14 @@ class BaseScraper(ABC):
     @property
     @final
     def urls(self) -> list[str]:
+        """
+        Get URLs collected from listings.
+
+        Returns
+        -------
+        list[str]
+            URLs for download files from.
+        """
         return list(self._urls)
 
     @property

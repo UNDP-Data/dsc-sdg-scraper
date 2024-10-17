@@ -8,6 +8,8 @@ __all__ = ["File", "Metadata", "Publication"]
 
 
 class File(BaseModel):
+    """File object from a publication page."""
+
     url: str = Field(
         description="A URL to a file.",
         examples=[
@@ -22,6 +24,8 @@ class File(BaseModel):
 
 
 class Metadata(BaseModel):
+    """Publication metadata."""
+
     source: str = Field(
         description="Source URL to a publication page. Can be a direct URL or DOI redirect.",
         examples=["https://www.undp.org/publications/climate-dictionary"],
@@ -46,6 +50,8 @@ class Metadata(BaseModel):
 
 
 class Publication(Metadata):
+    """Publication metadata and files."""
+
     files: list[File] | None = Field(
         default=None,
         description="Files from the publication page. One publication can have multiple linked files.",

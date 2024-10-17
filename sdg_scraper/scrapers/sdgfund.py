@@ -12,6 +12,10 @@ from ._base import BaseScraper
 
 
 class Scraper(BaseScraper):
+    """
+    Scraper for SDG Fund Library (https://www.sdgfund.org/library).
+    """
+
     def __init__(self, folder_path: str = None, **kwargs):
         super().__init__(
             url_base="https://www.sdgfund.org/",

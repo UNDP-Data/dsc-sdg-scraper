@@ -11,6 +11,10 @@ from ._base import BaseScraper
 
 
 class Scraper(BaseScraper):
+    """
+    Scraper for UN DESA Publications (https://sdgs.un.org/publications).
+    """
+
     def __init__(
         self,
         folder_path: str = None,

@@ -57,8 +57,9 @@ def list():
     default=True,
     help="Enable or disable support for HTTP/2 protocol (enabled by default).",
 )
+@click.option("--verbose", is_flag=True, help="Enable verbose output.")
 @make_sync
-async def run(source, folder, pages, connections, http2):
+async def run(source, folder, pages, connections, http2, verbose):
     """Run a scraper for a given source.
 
     SOURCE The name of the source to scrape.
@@ -69,6 +70,7 @@ async def run(source, folder, pages, connections, http2):
         folder_path=folder,
         max_connections=connections,
         http2=http2,
+        verbose=verbose,
     )
     async with scraper:
         await scraper(pages=range(pages[0], pages[1] + 1))

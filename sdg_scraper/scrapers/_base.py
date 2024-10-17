@@ -35,6 +35,7 @@ class BaseScraper(ABC):
         url_base: str,
         folder_path: str,
         max_connections: int = 4,
+        verbose: bool = False,
         **kwargs,
     ):
         """
@@ -48,6 +49,8 @@ class BaseScraper(ABC):
             Directory to save PDFs to. The directory must exist beforehand.
         max_connections : int, default=4
             Maximum number of concurrent connections.
+        verbose :  bool, default=False
+            When True, provide more output for monitoring.
         kwargs : dict
             Additional keyword arguments passed to `AsyncClient`.
         """
@@ -55,6 +58,7 @@ class BaseScraper(ABC):
         self.folder_path = folder_path
         self._urls = set()
         self.pubs = []
+        self.verbose = verbose
         self.limits = httpx.Limits(
             max_connections=max_connections,
             max_keepalive_connections=None,
@@ -127,7 +131,8 @@ class BaseScraper(ABC):
         soup = BeautifulSoup(response.content, features="lxml")
         labels = self._parse_labels(soup)
         if labels is None:
-            click.echo(f"Publication at {url} has no labels.")
+            if self.verbose:
+                click.echo(f"Publication at {url} has no labels.")
             return
         urls = self._parse_urls(soup)
         files = await self._download_files(urls)

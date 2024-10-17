@@ -6,7 +6,7 @@ import asyncio
 import os
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
-from typing import final
+from typing import Iterable, final
 
 import click
 import httpx
@@ -163,17 +163,17 @@ class BaseScraper(ABC):
 
     @staticmethod
     @abstractmethod
-    def _parse_urls(soup: BeautifulSoup) -> list[str]:
+    def _parse_urls(soup: BeautifulSoup) -> set[str]:
         pass
 
     @final
-    async def _download_files(self, urls: list[str]) -> list[File]:
+    async def _download_files(self, urls: Iterable[str]) -> list[File]:
         """
         Download files from a list of URLs.
 
         Parameters
         ----------
-        urls : list[str]
+        urls : Iterable[str]
             URLs to download files from.
 
         Returns

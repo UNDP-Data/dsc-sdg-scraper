@@ -65,13 +65,13 @@ class Scraper(BaseScraper):
         return None
 
     @staticmethod
-    def _parse_urls(soup: BeautifulSoup) -> list[str]:
+    def _parse_urls(soup: BeautifulSoup) -> set[str]:
         content = soup.find("div", {"id": "myTabContent"})
         anchors = content.find_all("a", {"class": "document-name"})
         base = "https://sdgs.un.org"
-        urls = [
+        urls = {
             urljoin(base, href)
             for a in anchors
             if (href := a.get("href", "")).endswith(".pdf")
-        ]
+        }
         return urls

@@ -65,7 +65,7 @@ class Scraper(BaseScraper):
         return labels
 
     @staticmethod
-    def _parse_urls(soup: BeautifulSoup) -> list[str]:
+    def _parse_urls(soup: BeautifulSoup) -> set[str]:
         anchors = soup.find_all("a", {"class": "library-link"})
-        urls = [a.get("href") for a in anchors if a.get("href", "").endswith(".pdf")]
+        urls = {a.get("href") for a in anchors if a.get("href", "").endswith(".pdf")}
         return urls

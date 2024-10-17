@@ -52,15 +52,24 @@ def list():
     show_default=True,
     help="Maximum number of concurrent connections.",
 )
+@click.option(
+    "--http2/--no-http2",
+    default=True,
+    help="Enable or disable support for HTTP/2 protocol (enabled by default).",
+)
 @make_sync
-async def run(source, folder, pages, connections):
+async def run(source, folder, pages, connections, http2):
     """Run a scraper for a given source.
 
     SOURCE The name of the source to scrape.
     """
     # dynamically import the module and scraper
     module = importlib.import_module(f".scrapers.{source}", __package__)
-    scraper = module.Scraper(folder_path=folder, max_connections=connections)
+    scraper = module.Scraper(
+        folder_path=folder,
+        max_connections=connections,
+        http2=http2,
+    )
     async with scraper:
         await scraper(pages=range(pages[0], pages[1] + 1))
     scraper.export()

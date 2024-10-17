@@ -34,8 +34,8 @@ class BaseScraper(ABC):
         self,
         url_base: str,
         folder_path: str,
-        headers: dict = None,
         max_connections: int = 4,
+        **kwargs,
     ):
         """
         Initialise an instance of the base class.
@@ -46,14 +46,13 @@ class BaseScraper(ABC):
             Base URL for the websites of interest.
         folder_path : str
             Directory to save PDFs to. The directory must exist beforehand.
-        headers : dict, optional
-            Headers to be passed to GET call.
         max_connections : int, default=4
             Maximum number of concurrent connections.
+        kwargs : dict
+            Additional keyword arguments passed to `AsyncClient`.
         """
         self.url_base = url_base
         self.folder_path = folder_path
-        self.headers = headers
         self._urls = set()
         self.pubs = []
         self.limits = httpx.Limits(
@@ -61,14 +60,17 @@ class BaseScraper(ABC):
             max_keepalive_connections=None,
             keepalive_expiry=5.0,
         )
-
-    async def __aenter__(self):
         self.client = httpx.AsyncClient(
-            headers=self.headers,
+            **kwargs,
             follow_redirects=True,
             limits=self.limits,
         )
+
+    async def __aenter__(self):
+        await self.client.__aenter__()
         click.echo("Opened the client...")
+        response = await self.client.get(self.url_base)
+        click.echo(f"Network protocol: {response.http_version}")
         return self
 
     async def __aexit__(self, exc_type, exc_value, traceback):

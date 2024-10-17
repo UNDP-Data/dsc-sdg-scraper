@@ -37,6 +37,7 @@ class Scraper(BaseScraper):
         if h1 := soup.find("h1"):
             title = h1.text.strip()
             return title
+        return None
 
     @staticmethod
     def _parse_type(soup: BeautifulSoup) -> str | None:

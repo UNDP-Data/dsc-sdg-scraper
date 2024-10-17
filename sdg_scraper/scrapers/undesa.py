@@ -41,6 +41,7 @@ class Scraper(BaseScraper):
         if h1 := soup.find("h1"):
             title = h1.text.strip()
             return title
+        return None
 
     @staticmethod
     def _parse_type(soup: BeautifulSoup) -> str | None:
@@ -61,6 +62,7 @@ class Scraper(BaseScraper):
         if goals := soup.find("div", {"class": "goals-content"}):
             labels = sorted(int(a.text) for a in goals.find_all("span"))
             return labels
+        return None
 
     @staticmethod
     def _parse_urls(soup: BeautifulSoup) -> list[str]:

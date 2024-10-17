@@ -56,7 +56,8 @@ class Scraper(BaseScraper):
                 year = datetime.strptime(date, "%B %d, %Y").year
             except (AttributeError, TypeError, ValueError):
                 year = None
-        return year
+            return year
+        return None
 
     @staticmethod
     def _parse_labels(soup: BeautifulSoup) -> list[int] | None:
@@ -75,7 +76,7 @@ class Scraper(BaseScraper):
     @staticmethod
     def __parse_metadata(soup: BeautifulSoup) -> dict:
         menu = soup.find("div", {"class": "publication-menu"})
-        metadata = dict()
+        metadata = {}
         for div in menu.find_all("div", {"class": "coh-row-inner"}):
             k, v = None, None
             if h6 := div.find("h6"):

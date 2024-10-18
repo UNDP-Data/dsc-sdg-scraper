@@ -37,8 +37,8 @@ class Scraper(BaseScraper):
 
     @staticmethod
     def _parse_type(soup: BeautifulSoup) -> str | None:
-        metadata = Scraper.__parse_metadata(soup)
-        if kind := metadata.get("type"):
+        details = Scraper.__parse_details(soup)
+        if kind := details.get("type"):
             kind = "|".join(kind)
         return kind
 
@@ -55,8 +55,8 @@ class Scraper(BaseScraper):
 
     @staticmethod
     def _parse_labels(soup: BeautifulSoup) -> list[int] | None:
-        metadata = Scraper.__parse_metadata(soup)
-        if labels := metadata.get("goals"):
+        details = Scraper.__parse_details(soup)
+        if labels := details.get("goals"):
             labels = re.findall(pattern=r"\d+", string="".join(labels))
             labels = sorted(map(int, labels))
         return labels
@@ -68,10 +68,10 @@ class Scraper(BaseScraper):
         return urls
 
     @staticmethod
-    def __parse_metadata(soup: BeautifulSoup) -> dict:
-        metadata = {}
+    def __parse_details(soup: BeautifulSoup) -> dict:
+        details = {}
         if (menu := soup.find("div", {"class": "publication-menu"})) is None:
-            return metadata
+            return details
         for div in menu.find_all("div", {"class": "coh-row-inner"}):
             k, v = None, None
             if h6 := div.find("h6"):
@@ -79,5 +79,5 @@ class Scraper(BaseScraper):
             if nav := div.find("nav", {"class": "menu"}):
                 v = [a.text.strip() for a in nav.find_all("a")]
             if k is not None and v is not None:
-                metadata[k] = v
-        return metadata
+                details[k] = v
+        return details

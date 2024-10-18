@@ -16,7 +16,7 @@ class Scraper(BaseScraper):
     Scraper for UNDP Publications (https://www.undp.org/publications).
     """
 
-    def __init__(self, settings: Settings):
+    def __init__(self, settings: Settings | None = None):
         super().__init__(url_base="https://www.undp.org", settings=settings)
 
     async def collect_cards(self, page: int = 0) -> None:

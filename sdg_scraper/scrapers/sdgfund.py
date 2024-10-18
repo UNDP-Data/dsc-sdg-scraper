@@ -17,7 +17,7 @@ class Scraper(BaseScraper):
     Scraper for SDG Fund Library (https://www.sdgfund.org/library).
     """
 
-    def __init__(self, settings: Settings):
+    def __init__(self, settings: Settings | None = None):
         super().__init__(url_base="https://www.sdgfund.org/", settings=settings)
 
     async def collect_cards(self, page: int = 1) -> None:

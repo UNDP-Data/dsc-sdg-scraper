@@ -33,7 +33,7 @@ class BaseScraper(ABC):
     def __init__(
         self,
         url_base: str,
-        settings: Settings,
+        settings: Settings | None = None,
         download_mode: Literal["files", "text"] = "files",
         **kwargs,
     ):
@@ -52,7 +52,7 @@ class BaseScraper(ABC):
             Additional keyword arguments passed to `AsyncClient`.
         """
         self.url_base = url_base
-        self.__settings = settings
+        self.__settings = settings or Settings()
         self.__limits = httpx.Limits(
             max_connections=self.__settings.max_connections,
             max_keepalive_connections=None,

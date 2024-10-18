@@ -69,8 +69,9 @@ class Scraper(BaseScraper):
 
     @staticmethod
     def __parse_metadata(soup: BeautifulSoup) -> dict:
-        menu = soup.find("div", {"class": "publication-menu"})
         metadata = {}
+        if (menu := soup.find("div", {"class": "publication-menu"})) is None:
+            return metadata
         for div in menu.find_all("div", {"class": "coh-row-inner"}):
             k, v = None, None
             if h6 := div.find("h6"):

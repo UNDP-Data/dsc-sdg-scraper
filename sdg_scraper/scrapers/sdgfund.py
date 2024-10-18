@@ -24,7 +24,7 @@ class Scraper(BaseScraper):
             **kwargs,
         )
 
-    async def parse_listing(self, page: int = 1) -> None:
+    async def collect_cards(self, page: int = 1) -> None:
         url = f"{self.url_base}/library"
         response = await self.client.get(url, params={"submit": "search", "page": page})
         response.raise_for_status()

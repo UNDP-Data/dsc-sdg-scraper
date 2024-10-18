@@ -24,10 +24,10 @@ class BaseScraper(ABC):
 
     Methods
     -------
-    parse_listing(self, page: int)
-        Parse a webpage listing publications to get URLs to publication pages.
-    parse_publication(self, card: Card)
-        Parse a publication page and download PDF files.
+    collect_cards(self, page: int)
+        Collect publication cards from a listing page to get URLs to publication pages.
+    process_card(self, card: Card)
+        Parse a publication page and download publication text or files.
     """
 
     def __init__(
@@ -87,18 +87,17 @@ class BaseScraper(ABC):
 
     @final
     async def __call__(self, pages: list[int]) -> None:
-        click.echo("Scraping listing pages...")
-        tasks = [self.parse_listing(page=page) for page in pages]
-        await tqdm.gather(*tasks)
-        click.echo(f"Scraping publications and saving files to {self.folder_path}...")
-        tasks = [self.parse_publication(card=card) for card in self.cards]
-        await tqdm.gather(*tasks)
+        click.echo("Collecting cards from listing pages...")
+        await tqdm.gather(*[self.collect_cards(page=page) for page in pages])
+        click.echo(f"Processing cards and saving publications to {self.folder_path}...")
+        await tqdm.gather(*[self.process_card(card) for card in self.cards])
 
     @abstractmethod
-    async def parse_listing(self, page: int) -> None:
+    async def collect_cards(self, page: int) -> None:
         """
-        Source-specific method to parse a webpage listing publications to get
-        URLs to publication pages. This method should be overridden in a subclass.
+        Source-specific method to collect publication cards from a listing page. The cards
+        hold URLs to individual publication pages and arbitrary metadata. This method must
+        be overridden in a subclass.
 
         Parameters
         ----------
@@ -112,9 +111,9 @@ class BaseScraper(ABC):
         pass
 
     @final
-    async def parse_publication(self, card: Card) -> None:
+    async def process_card(self, card: Card) -> None:
         """
-        Parse a publication page and download PDF files.
+        Parse a publication page and download publication text or files.
 
         Parameters
         ----------

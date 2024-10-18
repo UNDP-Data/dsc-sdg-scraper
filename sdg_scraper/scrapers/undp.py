@@ -23,7 +23,7 @@ class Scraper(BaseScraper):
             **kwargs,
         )
 
-    async def parse_listing(self, page: int = 0) -> None:
+    async def collect_cards(self, page: int = 0) -> None:
         url = f"{self.url_base}/publications"
         response = await self.client.get(url, params={"page": page})
         response.raise_for_status()

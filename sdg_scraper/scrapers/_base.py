@@ -14,7 +14,7 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from tqdm.asyncio import tqdm
 
-from ..entities import File, Publication
+from ..entities import Card, File, Metadata, Publication
 from ..utils import download_file, write_content
 
 
@@ -26,7 +26,7 @@ class BaseScraper(ABC):
     -------
     parse_listing(self, page: int)
         Parse a webpage listing publications to get URLs to publication pages.
-    parse_publication(self, url: str)
+    parse_publication(self, card: Card)
         Parse a publication page and download PDF files.
     """
 
@@ -59,7 +59,7 @@ class BaseScraper(ABC):
         """
         self.url_base = url_base
         self.folder_path = folder_path
-        self._urls = set()
+        self.cards = set()
         self.pubs = []
         self.download_mode = download_mode
         self.verbose = verbose
@@ -91,7 +91,7 @@ class BaseScraper(ABC):
         tasks = [self.parse_listing(page=page) for page in pages]
         await tqdm.gather(*tasks)
         click.echo(f"Scraping publications and saving files to {self.folder_path}...")
-        tasks = [self.parse_publication(url=url) for url in self.urls]
+        tasks = [self.parse_publication(card=card) for card in self.cards]
         await tqdm.gather(*tasks)
 
     @abstractmethod
@@ -112,14 +112,14 @@ class BaseScraper(ABC):
         pass
 
     @final
-    async def parse_publication(self, url: str):
+    async def parse_publication(self, card: Card) -> None:
         """
         Parse a publication page and download PDF files.
 
         Parameters
         ----------
-        url : str
-            URL of a publication webpage.
+        card : Card
+            Scraped Card object containing a URL and optional metadata.
 
         Raises
         ------
@@ -127,16 +127,16 @@ class BaseScraper(ABC):
             If the response code is not 200.
         """
         try:
-            response = await self.client.get(url=url)
+            response = await self.client.get(url=card.url)
             response.raise_for_status()
         except httpx.HTTPError:
-            click.echo(f"Failed to fetch {url}.", err=True)
+            click.echo(f"Failed to fetch {card.url}.", err=True)
             return
         soup = BeautifulSoup(response.content, features="lxml")
         labels = self._parse_labels(soup)
         if labels is None:
             if self.verbose:
-                click.echo(f"Publication at {url} has no labels.")
+                click.echo(f"Publication at {card.url} has no labels.")
             return
         match self.download_mode:
             case "files":
@@ -146,38 +146,41 @@ class BaseScraper(ABC):
                 text = self._parse_text(soup)
                 content = text.encode("utf-8")
                 file_name = await write_content(content, "txt", self.folder_path)
-                files = [File(url=url, name=file_name)]
+                files = [File(url=card.url, name=file_name)]
             case _:
                 raise ValueError(f"Unhandled case: {self.download_mode}")
-        pub = Publication(
-            source=url,
-            title=self._parse_title(soup),
-            type=self._parse_type(soup),
-            year=self._parse_year(soup),
-            labels=self._parse_labels(soup),
-            files=files or None,
-        )
+        metadata = self._parse_metadata(soup, card)
+        pub = Publication(**metadata.model_dump(), files=files or None)
         self.pubs.append(pub)
 
+    def _parse_metadata(self, soup: BeautifulSoup, card: Card) -> Metadata:
+        if card.metadata is None:
+            metadata = Metadata(
+                source=card.url,
+                title=self._parse_title(soup),
+                type=self._parse_type(soup),
+                year=self._parse_year(soup),
+                labels=self._parse_labels(soup),
+            )
+        else:
+            raise NotImplementedError
+        return metadata
+
     @staticmethod
-    @abstractmethod
     def _parse_title(soup: BeautifulSoup) -> str | None:
-        pass
+        raise NotImplementedError
 
     @staticmethod
-    @abstractmethod
     def _parse_type(soup: BeautifulSoup) -> str | None:
-        pass
+        raise NotImplementedError
 
     @staticmethod
-    @abstractmethod
     def _parse_year(soup: BeautifulSoup) -> int | None:
-        pass
+        raise NotImplementedError
 
     @staticmethod
-    @abstractmethod
     def _parse_labels(soup: BeautifulSoup) -> list[int] | None:
-        pass
+        raise NotImplementedError
 
     @staticmethod
     def _parse_urls(soup: BeautifulSoup) -> set[str]:
@@ -245,7 +248,7 @@ class BaseScraper(ABC):
         list[str]
             URLs for download files from.
         """
-        return list(self._urls)
+        return [card.url for card in self.cards]
 
     @property
     @final

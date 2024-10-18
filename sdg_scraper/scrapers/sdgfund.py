@@ -8,6 +8,7 @@ from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
 
+from ..entities import Card
 from ._base import BaseScraper
 
 
@@ -30,7 +31,8 @@ class Scraper(BaseScraper):
         soup = BeautifulSoup(response.content, features="lxml")
         cards = soup.find_all("div", {"class": "row-publication-teaser"})
         urls = [urljoin(self.url_base, card.find("a").get("href")) for card in cards]
-        self._urls.update(urls)
+        cards = [Card(url=url) for url in urls]
+        self.cards.update(cards)
 
     @staticmethod
     def _parse_title(soup: BeautifulSoup) -> str | None:

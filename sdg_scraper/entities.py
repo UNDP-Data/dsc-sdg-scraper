@@ -4,7 +4,32 @@ Entity (data) models with in-built type validation.
 
 from pydantic import BaseModel, Field
 
-__all__ = ["File", "Metadata", "Publication"]
+__all__ = ["Card", "File", "Metadata", "Publication"]
+
+
+class Card(BaseModel):
+    """
+    Publication card from a listing page.
+
+    When compared, card URLs are used while metadata are ignored.
+    """
+
+    def __hash__(self):
+        return hash(self.url)
+
+    def __eq__(self, other):
+        if isinstance(other, Card):
+            return self.url == other.url
+        return False
+
+    url: str = Field(
+        description="URL to a full publication.",
+        examples=["https://www.undp.org/publications/climate-dictionary"],
+    )
+    metadata: dict | None = Field(
+        default=None,
+        description="Arbitrary metadata related to the publication.",
+    )
 
 
 class File(BaseModel):

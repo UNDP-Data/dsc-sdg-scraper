@@ -7,6 +7,7 @@ from datetime import datetime
 
 from bs4 import BeautifulSoup
 
+from ..entities import Card
 from ._base import BaseScraper
 
 
@@ -29,7 +30,8 @@ class Scraper(BaseScraper):
         soup = BeautifulSoup(response.content, features="lxml")
         cards = soup.find_all("div", {"class": "content-card"})
         urls = [card.find("a").get("href") for card in cards]
-        self._urls.update(urls)
+        cards = [Card(url=url) for url in urls]
+        self.cards.update(cards)
 
     @staticmethod
     def _parse_title(soup: BeautifulSoup) -> str | None:

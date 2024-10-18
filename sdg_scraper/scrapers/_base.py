@@ -67,6 +67,7 @@ class BaseScraper(ABC):
         self.download_mode = download_mode
         self.cards = set()
         self.pubs = []
+        self.semaphore = asyncio.Semaphore(self.__settings.max_requests)
 
     async def __aenter__(self):
         await self.client.__aenter__()
@@ -120,8 +121,9 @@ class BaseScraper(ABC):
             If the response code is not 200.
         """
         try:
-            response = await self.client.get(url=card.url)
-            response.raise_for_status()
+            async with self.semaphore:
+                response = await self.client.get(url=card.url)
+                response.raise_for_status()
         except httpx.HTTPError:
             click.echo(f"Failed to fetch {card.url}.", err=True)
             return

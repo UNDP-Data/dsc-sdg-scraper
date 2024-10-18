@@ -46,12 +46,22 @@ def list():
     help="A range of listing pages to scrape from.",
 )
 @click.option(
-    "--connections",
+    "--max-connections",
     "-c",
     type=int,
     default=4,
     show_default=True,
-    help="Maximum number of concurrent connections.",
+    help="""Set the maximum number of simultaneous HTTP connections. This controls 
+    how many connections the HTTP client can maintain at once.""",
+)
+@click.option(
+    "--max-requests",
+    "-r",
+    type=int,
+    default=1,
+    show_default=True,
+    help="""Set the maximum number of concurrent requests that can be processed
+    at the same time. This helps to avoid overwhelming the target server.""",
 )
 @click.option(
     "--http2/--no-http2",
@@ -60,7 +70,7 @@ def list():
 )
 @click.option("--verbose", is_flag=True, help="Enable verbose output.")
 @make_sync
-async def run(source, folder, pages, connections, http2, verbose):
+async def run(source, folder, pages, max_connections, max_requests, http2, verbose):
     """Run a scraper for a given source.
 
     SOURCE The name of the source to scrape.
@@ -69,7 +79,8 @@ async def run(source, folder, pages, connections, http2, verbose):
     module = importlib.import_module(f".scrapers.{source}", __package__)
     settings = Settings(
         folder_path=folder,
-        max_connections=connections,
+        max_connections=max_connections,
+        max_requests=max_requests,
         http2=http2,
         verbose=verbose,
     )

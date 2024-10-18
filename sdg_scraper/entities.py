@@ -93,7 +93,11 @@ class Settings(BaseModel):
     )
     max_connections: int = Field(
         default=4,
-        description="Maximum number of concurrent connections.",
+        description="Maximum number of simultaneous HTTP connections",
+    )
+    max_requests: int = Field(
+        default=1,
+        description="Maximum number of concurrent requests ",
     )
     http2: bool = Field(
         default=True,

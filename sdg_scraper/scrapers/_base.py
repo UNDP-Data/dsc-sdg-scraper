@@ -6,6 +6,7 @@ import asyncio
 import os
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
+from random import uniform
 from typing import Iterable, Literal, final
 
 import click
@@ -87,6 +88,12 @@ class BaseScraper(ABC):
         click.echo(f"Processing cards and saving publications to {self.folder_path}...")
         await tqdm.gather(*[self.process_card(card) for card in self.cards])
 
+    @final
+    async def _wait(self) -> None:
+        """Wait for a random period of time."""
+        time = uniform(5, 10)
+        await asyncio.sleep(time)
+
     @abstractmethod
     async def collect_cards(self, page: int) -> None:
         """
@@ -124,6 +131,7 @@ class BaseScraper(ABC):
             async with self.semaphore:
                 response = await self.client.get(url=card.url)
                 response.raise_for_status()
+            await self._wait()
         except httpx.HTTPError:
             click.echo(f"Failed to fetch {card.url}.", err=True)
             return

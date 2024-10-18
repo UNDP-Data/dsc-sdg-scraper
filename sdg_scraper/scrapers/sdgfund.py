@@ -26,6 +26,7 @@ class Scraper(BaseScraper):
         async with self.semaphore:
             response = await self.client.get(url, params=params)
             response.raise_for_status()
+        await self._wait()
         soup = BeautifulSoup(response.content, features="lxml")
         cards = soup.find_all("div", {"class": "row-publication-teaser"})
         urls = [urljoin(self.url_base, card.find("a").get("href")) for card in cards]

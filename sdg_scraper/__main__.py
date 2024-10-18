@@ -7,6 +7,7 @@ import os
 
 import click
 
+from .entities import Settings
 from .utils import list_scrapers, make_sync
 
 
@@ -66,12 +67,13 @@ async def run(source, folder, pages, connections, http2, verbose):
     """
     # dynamically import the module and scraper
     module = importlib.import_module(f".scrapers.{source}", __package__)
-    scraper = module.Scraper(
+    settings = Settings(
         folder_path=folder,
         max_connections=connections,
         http2=http2,
         verbose=verbose,
     )
+    scraper = module.Scraper(settings=settings)
     async with scraper:
         await scraper(pages=range(pages[0], pages[1] + 1))
     scraper.export()

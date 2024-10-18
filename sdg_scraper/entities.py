@@ -4,7 +4,7 @@ Entity (data) models with in-built type validation.
 
 from pydantic import BaseModel, Field
 
-__all__ = ["Card", "File", "Metadata", "Publication"]
+__all__ = ["Card", "File", "Metadata", "Publication", "Settings"]
 
 
 class Card(BaseModel):
@@ -81,4 +81,25 @@ class Publication(Metadata):
         default=None,
         description="""Files from the publication page. One publication can have
         multiple linked files.""",
+    )
+
+
+class Settings(BaseModel):
+    """Scraper settings conrtolling concurrency, HTTP protocol, output location etc."""
+
+    folder_path: str = Field(
+        default="",
+        description="Directory to save publications to. The directory must exist beforehand.",
+    )
+    max_connections: int = Field(
+        default=4,
+        description="Maximum number of concurrent connections.",
+    )
+    http2: bool = Field(
+        default=True,
+        description="When True, HTTP/2 protocol will be attempted for connections.",
+    )
+    verbose: bool = Field(
+        default=False,
+        description="When True, provide more output for monitoring.",
     )

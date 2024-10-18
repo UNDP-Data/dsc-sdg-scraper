@@ -14,7 +14,7 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from tqdm.asyncio import tqdm
 
-from ..entities import Card, File, Metadata, Publication
+from ..entities import Card, File, Metadata, Publication, Settings
 from ..utils import download_file, write_content
 
 
@@ -33,10 +33,8 @@ class BaseScraper(ABC):
     def __init__(
         self,
         url_base: str,
-        folder_path: str,
-        max_connections: int = 4,
+        settings: Settings,
         download_mode: Literal["files", "text"] = "files",
-        verbose: bool = False,
         **kwargs,
     ):
         """
@@ -46,33 +44,29 @@ class BaseScraper(ABC):
         ----------
         url_base : str
             Base URL for the websites of interest.
-        folder_path : str
-            Directory to save PDFs to. The directory must exist beforehand.
-        max_connections : int, default=4
-            Maximum number of concurrent connections.
+        settings : Settings
+            Scraper settings defining directories, concurrency, verbosity etc.
         download_mode : Literal["files", "text"], default="files"
             Mode for controlling which class method is used to download content.
-        verbose :  bool, default=False
-            When True, provide more output for monitoring.
         kwargs : dict
             Additional keyword arguments passed to `AsyncClient`.
         """
         self.url_base = url_base
-        self.folder_path = folder_path
-        self.cards = set()
-        self.pubs = []
-        self.download_mode = download_mode
-        self.verbose = verbose
-        self.limits = httpx.Limits(
-            max_connections=max_connections,
+        self.__settings = settings
+        self.__limits = httpx.Limits(
+            max_connections=self.__settings.max_connections,
             max_keepalive_connections=None,
             keepalive_expiry=5.0,
         )
         self.client = httpx.AsyncClient(
             **kwargs,
+            http2=self.__settings.http2,
             follow_redirects=True,
-            limits=self.limits,
+            limits=self.__limits,
         )
+        self.download_mode = download_mode
+        self.cards = set()
+        self.pubs = []
 
     async def __aenter__(self):
         await self.client.__aenter__()
@@ -134,7 +128,7 @@ class BaseScraper(ABC):
         soup = BeautifulSoup(response.content, features="lxml")
         labels = self._parse_labels(soup)
         if labels is None:
-            if self.verbose:
+            if self.__settings.verbose:
                 click.echo(f"Publication at {card.url} has no labels.")
             return
         match self.download_mode:
@@ -235,6 +229,32 @@ class BaseScraper(ABC):
         tasks = [download_file(self.client, url, self.folder_path) for url in urls]
         files = await asyncio.gather(*tasks)
         return files
+
+    @property
+    @final
+    def settings(self) -> Settings:
+        """
+        Get scraper settings.
+
+        Returns
+        -------
+        Settings
+            Scraper settings object.
+        """
+        return self.__settings
+
+    @property
+    @final
+    def folder_path(self) -> str:
+        """
+        Get a path to the folder for saving publications.
+
+        Returns
+        -------
+        str
+            Path to the folder.
+        """
+        return self.__settings.folder_path
 
     @property
     @final

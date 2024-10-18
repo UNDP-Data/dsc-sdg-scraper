@@ -8,7 +8,7 @@ from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
 
-from ..entities import Card
+from ..entities import Card, Settings
 from ._base import BaseScraper
 
 
@@ -17,12 +17,8 @@ class Scraper(BaseScraper):
     Scraper for SDG Fund Library (https://www.sdgfund.org/library).
     """
 
-    def __init__(self, folder_path: str = None, **kwargs):
-        super().__init__(
-            url_base="https://www.sdgfund.org/",
-            folder_path=folder_path,
-            **kwargs,
-        )
+    def __init__(self, settings: Settings):
+        super().__init__(url_base="https://www.sdgfund.org/", settings=settings)
 
     async def collect_cards(self, page: int = 1) -> None:
         url = f"{self.url_base}/library"

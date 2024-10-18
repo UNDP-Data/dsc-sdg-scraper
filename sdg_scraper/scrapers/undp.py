@@ -15,11 +15,7 @@ class Scraper(BaseScraper):
     Scraper for UNDP Publications (https://www.undp.org/publications).
     """
 
-    def __init__(
-        self,
-        folder_path: str = None,
-        **kwargs,
-    ):
+    def __init__(self, folder_path: str = None, **kwargs):
         super().__init__(
             url_base="https://www.undp.org",
             folder_path=folder_path,

@@ -15,11 +15,7 @@ class Scraper(BaseScraper):
     Scraper for UN DESA Publications (https://sdgs.un.org/publications).
     """
 
-    def __init__(
-        self,
-        folder_path: str = None,
-        **kwargs,
-    ):
+    def __init__(self, folder_path: str = None, **kwargs):
         super().__init__(
             url_base="https://sdgs.un.org",
             folder_path=folder_path,

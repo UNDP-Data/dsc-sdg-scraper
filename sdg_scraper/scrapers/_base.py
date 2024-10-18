@@ -6,7 +6,7 @@ import asyncio
 import os
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
-from random import uniform
+from random import shuffle, uniform
 from typing import Iterable, Literal, final
 
 import click
@@ -84,9 +84,16 @@ class BaseScraper(ABC):
     @final
     async def __call__(self, pages: list[int]) -> None:
         click.echo("Collecting cards from listing pages...")
+        # randomise page order
+        pages = pages.copy()
+        shuffle(pages)
         await tqdm.gather(*[self.collect_cards(page=page) for page in pages])
+
         click.echo(f"Processing cards and saving publications to {self.folder_path}...")
-        await tqdm.gather(*[self.process_card(card) for card in self.cards])
+        # randomise publication order
+        cards = list(self.cards)
+        shuffle(cards)
+        await tqdm.gather(*[self.process_card(card) for card in cards])
 
     @final
     async def _wait(self) -> None:

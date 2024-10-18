@@ -126,7 +126,8 @@ class BaseScraper(ABC):
                 response.raise_for_status()
             await self._wait()
         except httpx.HTTPError:
-            click.echo(f"Failed to fetch {url}.", err=True)
+            if self.__settings.verbose:
+                click.echo(f"Failed to fetch {url}.", err=True)
             return
         soup = BeautifulSoup(response.content, features="lxml")
         return soup

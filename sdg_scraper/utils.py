@@ -10,6 +10,7 @@ from functools import wraps
 from hashlib import md5
 from typing import Callable
 
+import aiofiles
 import click
 import httpx
 
@@ -36,9 +37,9 @@ def get_file_id(content: bytes) -> str:
     return file_id
 
 
-def write_content(content: bytes, extension: str, folder_path: str = None) -> str:
+async def write_content(content: bytes, extension: str, folder_path: str = None) -> str:
     """
-    Write content to a file.
+    Asynchronously write content to a file.
 
     Parameters
     ----------
@@ -58,8 +59,8 @@ def write_content(content: bytes, extension: str, folder_path: str = None) -> st
     file_id = get_file_id(content)
     file_name = f"{file_id}.{extension}"
     file_path = os.path.join(folder_path or "", file_name)
-    with open(file_path, "wb") as file:
-        file.write(content)
+    async with aiofiles.open(file_path, mode="wb") as file:
+        await file.write(content)
     return file_name
 
 
@@ -107,7 +108,7 @@ async def download_file(
     except httpx.HTTPError:
         click.echo(f"Could not download a file from {url}.", err=True)
         return File(url=url, name=None)
-    file_name = write_content(response.content, file_extension, folder_path)
+    file_name = await write_content(response.content, file_extension, folder_path)
     file = File(url=url, name=file_name)
     return file
 

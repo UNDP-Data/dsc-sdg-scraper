@@ -36,6 +36,33 @@ def get_file_id(content: bytes) -> str:
     return file_id
 
 
+def write_content(content: bytes, extension: str, folder_path: str = None) -> str:
+    """
+    Write content to a file.
+
+    Parameters
+    ----------
+    content : bytes
+        Contents of a file as bytes.
+    extension : str
+        Extension of the file to be saved.
+    folder_path : str, optional
+        Path to the folder where the file will be saved.
+
+    Returns
+    -------
+    file_name : str
+        Unique file name based on the hash of file contents.
+    """
+    # construct a file name and path
+    file_id = get_file_id(content)
+    file_name = f"{file_id}.{extension}"
+    file_path = os.path.join(folder_path or "", file_name)
+    with open(file_path, "wb") as file:
+        file.write(content)
+    return file_name
+
+
 async def download_file(
     client: httpx.AsyncClient,
     url: str,
@@ -80,14 +107,7 @@ async def download_file(
     except httpx.HTTPError:
         click.echo(f"Could not download a file from {url}.", err=True)
         return File(url=url, name=None)
-
-    # construct a file name and path
-    file_id = get_file_id(response.content)
-    file_name = f"{file_id}.{file_extension}"
-    file_path = os.path.join(folder_path or "", file_name)
-
-    with open(file_path, "wb") as file:
-        file.write(response.content)
+    file_name = write_content(response.content, file_extension, folder_path)
     file = File(url=url, name=file_name)
     return file
 

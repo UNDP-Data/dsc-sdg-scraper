@@ -16,7 +16,13 @@ import httpx
 
 from .entities import File
 
-__all__ = ["get_file_id", "download_file", "list_scrapers", "make_sync"]
+__all__ = [
+    "get_file_id",
+    "write_content",
+    "download_file",
+    "list_scrapers",
+    "make_sync",
+]
 
 
 def get_file_id(content: bytes) -> str:

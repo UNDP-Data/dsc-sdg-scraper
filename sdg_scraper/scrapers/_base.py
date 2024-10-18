@@ -6,7 +6,7 @@ import asyncio
 import os
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
-from typing import Iterable, final
+from typing import Iterable, Literal, final
 
 import click
 import httpx
@@ -15,7 +15,7 @@ from bs4 import BeautifulSoup
 from tqdm.asyncio import tqdm
 
 from ..entities import File, Publication
-from ..utils import download_file
+from ..utils import download_file, write_content
 
 
 class BaseScraper(ABC):
@@ -35,6 +35,7 @@ class BaseScraper(ABC):
         url_base: str,
         folder_path: str,
         max_connections: int = 4,
+        download_mode: Literal["files", "text"] = "files",
         verbose: bool = False,
         **kwargs,
     ):
@@ -49,6 +50,8 @@ class BaseScraper(ABC):
             Directory to save PDFs to. The directory must exist beforehand.
         max_connections : int, default=4
             Maximum number of concurrent connections.
+        download_mode : Literal["files", "text"], default="files"
+            Mode for controlling which class method is used to download content.
         verbose :  bool, default=False
             When True, provide more output for monitoring.
         kwargs : dict
@@ -58,6 +61,7 @@ class BaseScraper(ABC):
         self.folder_path = folder_path
         self._urls = set()
         self.pubs = []
+        self.download_mode = download_mode
         self.verbose = verbose
         self.limits = httpx.Limits(
             max_connections=max_connections,
@@ -134,8 +138,17 @@ class BaseScraper(ABC):
             if self.verbose:
                 click.echo(f"Publication at {url} has no labels.")
             return
-        urls = self._parse_urls(soup)
-        files = await self._download_files(urls)
+        match self.download_mode:
+            case "files":
+                urls = self._parse_urls(soup)
+                files = await self._download_files(urls)
+            case "text":
+                text = self._parse_text(soup)
+                content = text.encode("utf-8")
+                file_name = await write_content(content, "txt", self.folder_path)
+                files = [File(url=url, name=file_name)]
+            case _:
+                raise ValueError(f"Unhandled case: {self.download_mode}")
         pub = Publication(
             source=url,
             title=self._parse_title(soup),
@@ -167,9 +180,40 @@ class BaseScraper(ABC):
         pass
 
     @staticmethod
-    @abstractmethod
     def _parse_urls(soup: BeautifulSoup) -> set[str]:
-        pass
+        """
+        Parse URLs to publications from a webpage content. This method needs to be overridden
+        only by scrapers that collect files, not text.
+
+        Parameters
+        ----------
+        soup : BeautifulSoup
+            Contents of a webpage as a bs4 object.
+
+        Returns
+        -------
+        set[str]
+            Unique URLs to publications.
+        """
+        raise NotImplementedError
+
+    @staticmethod
+    def _parse_text(soup: BeautifulSoup) -> str:
+        """
+        Parse text from a webpage content. This method needs to be overridden
+        only by scrapers that collect text, not files.
+
+        Parameters
+        ----------
+        soup : BeautifulSoup
+            Contents of a webpage as a bs4 object.
+
+        Returns
+        -------
+        str
+            Parsed SDG-related text.
+        """
+        raise NotImplementedError
 
     @final
     async def _download_files(self, urls: Iterable[str]) -> list[File]:

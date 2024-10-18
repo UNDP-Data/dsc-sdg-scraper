@@ -23,11 +23,8 @@ class Scraper(BaseScraper):
     async def collect_cards(self, page: int = 1) -> None:
         url = f"{self.url_base}/library"
         params = {"submit": "search", "page": page}
-        async with self.semaphore:
-            response = await self.client.get(url, params=params)
-            response.raise_for_status()
-        await self._wait()
-        soup = BeautifulSoup(response.content, features="lxml")
+        if (soup := await self.get_soup(url, params)) is None:
+            return
         cards = soup.find_all("div", {"class": "row-publication-teaser"})
         urls = [urljoin(self.url_base, card.find("a").get("href")) for card in cards]
         cards = [Card(url=url) for url in urls]

@@ -101,6 +101,36 @@ class BaseScraper(ABC):
         time = uniform(5, 10)
         await asyncio.sleep(time)
 
+    @final
+    async def get_soup(
+        self, url: str, params: dict | None = None
+    ) -> BeautifulSoup | None:
+        """
+        Get contents of a webpage as a BeautifulSoup object.
+
+        Parameters
+        ----------
+        url : str
+            URL to make a GET request to.
+        params : dict | None, optional
+            Query parameters to be passed in the request.
+
+        Returns
+        -------
+        BeautifulSoup | None
+            A BeautifulSoup object if the request succeeded, otherwise None.
+        """
+        try:
+            async with self.semaphore:
+                response = await self.client.get(url, params=params)
+                response.raise_for_status()
+            await self._wait()
+        except httpx.HTTPError:
+            click.echo(f"Failed to fetch {url}.", err=True)
+            return
+        soup = BeautifulSoup(response.content, features="lxml")
+        return soup
+
     @abstractmethod
     async def collect_cards(self, page: int) -> None:
         """
@@ -134,15 +164,8 @@ class BaseScraper(ABC):
         HTTPError
             If the response code is not 200.
         """
-        try:
-            async with self.semaphore:
-                response = await self.client.get(url=card.url)
-                response.raise_for_status()
-            await self._wait()
-        except httpx.HTTPError:
-            click.echo(f"Failed to fetch {card.url}.", err=True)
+        if (soup := await self.get_soup(card.url)) is None:
             return
-        soup = BeautifulSoup(response.content, features="lxml")
         labels = self._parse_labels(soup)
         if labels is None:
             if self.__settings.verbose:

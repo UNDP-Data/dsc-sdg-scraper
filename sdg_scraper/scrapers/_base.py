@@ -166,8 +166,8 @@ class BaseScraper(ABC):
         """
         if (soup := await self.get_soup(card.url)) is None:
             return
-        labels = self._parse_labels(soup)
-        if labels is None:
+        metadata = self._parse_metadata(soup, card)
+        if metadata.labels is None:
             if self.__settings.verbose:
                 click.echo(f"Publication at {card.url} has no labels.")
             return
@@ -182,7 +182,6 @@ class BaseScraper(ABC):
                 files = [File(url=card.url, name=file_name)]
             case _:
                 raise ValueError(f"Unhandled case: {self.download_mode}")
-        metadata = self._parse_metadata(soup, card)
         pub = Publication(**metadata.model_dump(), files=files or None)
         self.pubs.append(pub)
 

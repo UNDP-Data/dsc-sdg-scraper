@@ -69,20 +69,16 @@ def list():
 )
 @click.option("--verbose", is_flag=True, help="Enable verbose output.")
 @make_sync
-async def run(source, folder, pages, max_connections, max_requests, http2, verbose):
+async def run(**kwargs):
     """Run a scraper for a given source.
 
     SOURCE The name of the source to scrape.
     """
     # dynamically import the module and scraper
+    source = kwargs.pop("source")
     module = importlib.import_module(f".scrapers.{source}", __package__)
-    settings = Settings(
-        folder_path=folder,
-        max_connections=max_connections,
-        max_requests=max_requests,
-        http2=http2,
-        verbose=verbose,
-    )
+    pages = kwargs.pop("pages")
+    settings = Settings(**kwargs)
     scraper = module.Scraper(settings=settings)
     async with scraper:
         await scraper(pages=tuple(range(pages[0], pages[1] + 1)))

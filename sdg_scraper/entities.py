@@ -89,6 +89,7 @@ class Settings(BaseModel):
 
     folder_path: str = Field(
         default="",
+        alias="folder",
         description="Directory to save publications to. The directory must exist beforehand.",
     )
     max_connections: int = Field(

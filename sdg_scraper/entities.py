@@ -68,7 +68,7 @@ class Metadata(BaseModel):
         description="Publication year.",
         examples=[2023],
     )
-    labels: list[int] = Field(
+    labels: list[int] | None = Field(
         description="SDG labels for the publication.",
         examples=[[13, 17]],
     )

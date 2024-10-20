@@ -177,6 +177,10 @@ class BaseScraper(ABC):
                 files = await self._download_files(urls)
             case "text":
                 text = self._parse_text(soup)
+                if text is None:
+                    if self.__settings.verbose:
+                        click.echo(f"Publication at {card.url} has no text.")
+                    return
                 content = text.encode("utf-8")
                 file_name = await write_content(content, "txt", self.folder_path)
                 files = [File(url=card.url, name=file_name)]
@@ -233,7 +237,7 @@ class BaseScraper(ABC):
         raise NotImplementedError
 
     @staticmethod
-    def _parse_text(soup: BeautifulSoup) -> str:
+    def _parse_text(soup: BeautifulSoup) -> str | None:
         """
         Parse text from a webpage content. This method needs to be overridden
         only by scrapers that collect text, not files.
@@ -245,8 +249,8 @@ class BaseScraper(ABC):
 
         Returns
         -------
-        str
-            Parsed SDG-related text.
+        str | None
+            Parsed SDG-related text if available, otherwise, None.
         """
         raise NotImplementedError
 

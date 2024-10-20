@@ -54,7 +54,7 @@ class BaseScraper(ABC):
         """
         self.url_base = url_base
         self.__settings = settings or Settings()
-        self.__limits = httpx.Limits(
+        limits = httpx.Limits(
             max_connections=self.__settings.max_connections,
             max_keepalive_connections=None,
             keepalive_expiry=5.0,
@@ -63,7 +63,7 @@ class BaseScraper(ABC):
             **kwargs,
             http2=self.__settings.http2,
             follow_redirects=True,
-            limits=self.__limits,
+            limits=limits,
         )
         self.download_mode = download_mode
         self.cards = set()

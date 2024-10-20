@@ -122,13 +122,15 @@ class Scraper(BaseScraper):
 
     @staticmethod
     def _parse_text(soup: BeautifulSoup) -> str | None:
-        classes = [
-            ("narrow-content", "field--type-text-with-summary"),  # news
-            ("node--type-story-page", "field--type-text-with-summary"),  # stories
-            ("node--type-blog-list", "field--name-field-contents"),  # blogs
-        ]
-        for class1, class2 in classes:
-            if (div := soup.find("div", {"class": class1})) is not None:
-                div = div.find("div", {"class": class2})
-                return div.text.strip()
-        return None
+        # blog
+        if div := soup.find("div", {"class": "node--type-blog-list"}):
+            div = div.find("div", {"class": "field--name-field-contents"})
+        # news
+        elif div := soup.find("div", {"class": "narrow-content"}):
+            div = div.find("div", {"class": "field--type-text-with-summary"})
+        # stories
+        elif div := soup.find("div", {"data-history-node-id": re.compile(r"\d+")}):
+            pass
+        if div is None:
+            return None
+        return div.text.strip()

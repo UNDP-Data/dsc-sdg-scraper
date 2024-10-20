@@ -148,7 +148,6 @@ class BaseScraper(ABC):
         -------
         None
         """
-        pass
 
     @final
     async def process_card(self, card: Card) -> None:

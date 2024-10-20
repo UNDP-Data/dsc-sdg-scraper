@@ -14,7 +14,6 @@ from .utils import list_scrapers, make_sync
 @click.group()
 def cli():
     """A simple CLI for scraping."""
-    pass
 
 
 @cli.command()
@@ -51,7 +50,7 @@ def list():
     type=int,
     default=4,
     show_default=True,
-    help="""Set the maximum number of simultaneous HTTP connections. This controls 
+    help="""Set the maximum number of simultaneous HTTP connections. This controls
     how many connections the HTTP client can maintain at once.""",
 )
 @click.option(

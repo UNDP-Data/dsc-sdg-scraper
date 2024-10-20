@@ -85,7 +85,7 @@ async def run(source, folder, pages, max_connections, max_requests, http2, verbo
     )
     scraper = module.Scraper(settings=settings)
     async with scraper:
-        await scraper(pages=[page for page in range(pages[0], pages[1] + 1)])
+        await scraper(pages=tuple(range(pages[0], pages[1] + 1)))
     scraper.export()
     click.echo("Completed.")
 

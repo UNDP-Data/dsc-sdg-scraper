@@ -82,10 +82,10 @@ class BaseScraper(ABC):
         click.echo("Closed the client.")
 
     @final
-    async def __call__(self, pages: list[int]) -> None:
+    async def __call__(self, pages: Iterable[int]) -> None:
         click.echo("Collecting cards from listing pages...")
         # randomise page order
-        pages = pages.copy()
+        pages = list(pages)
         shuffle(pages)
         await tqdm.gather(*[self.collect_cards(page=page) for page in pages])
 

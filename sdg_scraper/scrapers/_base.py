@@ -4,6 +4,7 @@ A base scraper class from which other scrapers inherit.
 
 import asyncio
 import os
+import re
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
 from random import shuffle, uniform
@@ -269,6 +270,7 @@ class BaseScraper(ABC):
         files : list[File]
             List of file objects.
         """
+        urls = [re.sub(r"^http://", "https://", url) for url in urls]
         tasks = [download_file(self.client, url, self.folder_path) for url in urls]
         files = await asyncio.gather(*tasks)
         return files
